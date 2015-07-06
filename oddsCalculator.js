@@ -13,6 +13,7 @@ var oddsCalculator = function() {
 	};
 
 	var isStraightFlush = function(cards) {
+		
 	};
 
 	var isFourOfAKind = function(cards) {
@@ -73,7 +74,45 @@ var oddsCalculator = function() {
 	};
 
 	var isStraight = function(cards) {
-
+		var lastCardValue = -1;
+		var straightLength = 0;
+		var handCards = [];
+		for(var i = cards.length - 1; i >= 0; i--) {
+			if(lastCardValue === cards[i].value + 1) {
+				straightLength++;
+				if(straightLength === 5) {
+					for(var j = i; j < i + 5; j++) {
+						handCards.push(cards[j]);
+					}
+					return {
+						cards: handCards,
+						handStrength: 4
+					};
+				}
+				lastCardValue = cards[i].value;
+			}
+			else {
+				if(i < 4) {
+					return null;
+				}
+				lastCardValue = cards[i].value;
+				straightLength = 1;
+			}
+		}
+		// if last card is ace, we need to check if can be ace,2,3,4,5 straight
+		if(straightLength === 4 && cards[cards.length -1].value === 13 && cards[0].value === 0) {
+			for(var m = 0; m < 4; m++) {
+				handCards.push(cards[m]);
+			}
+			handCards.push(cards[cards.length - 1]);
+			return {
+				cards: handCards,
+				handStrength: 4
+			};
+		}
+		else {
+			return null;
+		}
 	};
 
 	var isThreeOfAKind = function(cards) {
@@ -109,7 +148,35 @@ var oddsCalculator = function() {
 	};
 
 	var isTwoPairs = function(cards) {
-
+		var sameValueCardsNumber = 0;
+		var cardValue;
+		var handCards = [];
+		for(var i = cards.length - 1; i >= 0; i--) {
+			if(cards[i].value === cardValue) {
+				sameValueCardsNumber++;
+				if(sameValueCardsNumber === 2) {
+					for(var j = i; j < i + 2; j++) {
+						handCards.push(cards[j]);
+					}
+					cards.splice(i, 2);
+					if(handCards.length === 4) {
+						handCards.push(cards[cards.length - 1]);
+						return {
+							cards: handCards,
+							handStrength: 2
+						};
+					}
+				}
+			}
+			else {
+				if(i < 2) {
+					return null;
+				}
+				cardValue = cards[i].value;
+				sameValueCardsNumber = 1;
+			}
+		}
+		return null;
 	};
 
 	var isOnePair = function(cards) {
@@ -124,7 +191,7 @@ var oddsCalculator = function() {
 						handCards.push(cards[j]);
 					}
 					cards.splice(i, 2);
-					//add the 2 highest card possible to hand
+					//add the 3 highest card possible to hand
 					handCards.push(cards[cards.length - 1]);
 					handCards.push(cards[cards.length - 2]);
 					handCards.push(cards[cards.length - 3]);
