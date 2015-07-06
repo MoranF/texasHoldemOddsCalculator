@@ -13,7 +13,47 @@ var oddsCalculator = function() {
 	};
 
 	var isStraightFlush = function(cards) {
-		
+		var lastCardValue = -1;
+		var straightLength = 0;
+		var lastSymbol = -1;
+		var handCards = [];
+		for(var i = cards.length - 1; i >= 0; i--) {
+			if(lastCardValue === cards[i].value + 1 && lastSymbol === cards[i].symbol) {
+				straightLength++;
+				if(straightLength === 5) {
+					for(var j = i; j < i + 5; j++) {
+						handCards.push(cards[j]);
+					}
+					return {
+						cards: handCards,
+						handStrength: 8
+					};
+				}
+				lastCardValue = cards[i].value;
+			}
+			else {
+				if(i < 4) {
+					return null;
+				}
+				lastCardValue = cards[i].value;
+				lastSymbol = cards[i].symbol;
+				straightLength = 1;
+			}
+		}
+		// if last card is ace, we need to check if can be ace,2,3,4,5 straight
+		if(straightLength === 4 && cards[cards.length -1].value === 13 && cards[0].value === 0 && lastSymbol === cards[cards.length -1].symbol) {
+			for(var m = 0; m < 4; m++) {
+				handCards.push(cards[m]);
+			}
+			handCards.push(cards[cards.length - 1]);
+			return {
+				cards: handCards,
+				handStrength: 8
+			};
+		}
+		else {
+			return null;
+		}
 	};
 
 	var isFourOfAKind = function(cards) {
