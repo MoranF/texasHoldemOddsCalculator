@@ -26,7 +26,8 @@ var oddsCalculator = function() {
 					}
 					return {
 						cards: handCards,
-						handStrength: 8
+						handStrength: 8,
+						highestCardValue: handCards[handCards.length - 1].value
 					};
 				}
 				lastCardValue = cards[i].value;
@@ -48,7 +49,8 @@ var oddsCalculator = function() {
 			handCards.push(cards[cards.length - 1]);
 			return {
 				cards: handCards,
-				handStrength: 8
+				handStrength: 8,
+				highestCardValue: 3
 			};
 		}
 		else {
@@ -60,6 +62,7 @@ var oddsCalculator = function() {
 		var sameValueCardsNumber = 0;
 		var cardValue;
 		var handCards = [];
+		var highCardValue;
 		for(var i = cards.length - 1; i >= 0; i--) {
 			if(cards[i].value === cardValue) {
 				sameValueCardsNumber++;
@@ -69,11 +72,14 @@ var oddsCalculator = function() {
 					}
 					cards.splice(i, 4);
 					//add highest card possible to hand
+					highCardValue = cards[cards.length - 1].value;
 					handCards.push(cards[cards.length - 1]);
 					handCards.sort(sortCardsByValue);
 					return {
 						cards: handCards,
-						handStrength: 7
+						handStrength: 7,
+						setCardValue: cardValue,
+						highCardValue: highCardValue
 					};
 				}
 			}
@@ -91,10 +97,12 @@ var oddsCalculator = function() {
 		var sameValueCardsNumber = 0;
 		var cardValue;
 		var handCards = [];
+		var setThreeValue;
 		for(var i = cards.length - 1; i >= 0; i--) {
 			if(cards[i].value === cardValue) {
 				sameValueCardsNumber++;
 				if(sameValueCardsNumber === 3) {
+					setThreeValue = cardValue;
 					for(var j = i; j < i + 3; j++) {
 						handCards.push(cards[j]);
 					}
@@ -111,7 +119,9 @@ var oddsCalculator = function() {
 								handCards.sort(sortCardsByValue);
 								return {
 									cards: handCards,
-									handStrength: 6
+									handStrength: 6,
+									setThreeValue: setThreeValue,
+									pairValue: cardValue
 								};
 							}
 						}
@@ -150,7 +160,8 @@ var oddsCalculator = function() {
 				}
 				return {
 					cards: handCards,
-					handStrength: 5
+					handStrength: 5,
+					highestCardValue: handCards[handCards.length - 1].value
 				};
 			}
 		}
@@ -170,7 +181,8 @@ var oddsCalculator = function() {
 					}
 					return {
 						cards: handCards,
-						handStrength: 4
+						handStrength: 4,
+						highestCardValue: handCards[handCards.length - 1].value
 					};
 				}
 				lastCardValue = cards[i].value;
@@ -184,14 +196,15 @@ var oddsCalculator = function() {
 			}
 		}
 		// if last card is ace, we need to check if can be ace,2,3,4,5 straight
-		if(straightLength === 4 && cards[cards.length -1].value === 13 && cards[0].value === 0) {
-			for(var m = 0; m < 4; m++) {
+		if(straightLength === 3 && cards[cards.length -1].value === 13 && cards[0].value === 0) {
+			for(var m = 0; m < 3; m++) {
 				handCards.push(cards[m]);
 			}
 			handCards.push(cards[cards.length - 1]);
 			return {
 				cards: handCards,
-				handStrength: 4
+				handStrength: 4,
+				highestCardValue: 3
 			};
 		}
 		else {
@@ -203,6 +216,7 @@ var oddsCalculator = function() {
 		var sameValueCardsNumber = 0;
 		var cardValue;
 		var handCards = [];
+		var highCardsValues = [];
 		for(var i = cards.length - 1; i >= 0; i--) {
 			if(cards[i].value === cardValue) {
 				sameValueCardsNumber++;
@@ -212,12 +226,16 @@ var oddsCalculator = function() {
 					}
 					cards.splice(i, 3);
 					//add the 2 highest card possible to hand
-					handCards.push(cards[cards.length - 1]);
 					handCards.push(cards[cards.length - 2]);
+					highCardsValues.push(cards[cards.length - 2].value);
+					handCards.push(cards[cards.length - 1]);
+					highCardsValues.push(cards[cards.length - 1].value);
 					handCards.sort(sortCardsByValue);
 					return {
 						cards: handCards,
-						handStrength: 3
+						handStrength: 3,
+						setCardValue: cardValue,
+						highCardsValues: highCardsValues
 					};
 				}
 			}
@@ -235,19 +253,32 @@ var oddsCalculator = function() {
 		var sameValueCardsNumber = 0;
 		var cardValue;
 		var handCards = [];
+		var highPairValue;
+		var lowPairValue;
+		var highCardValue;
 		for(var i = cards.length - 1; i >= 0; i--) {
 			if(cards[i].value === cardValue) {
 				sameValueCardsNumber++;
 				if(sameValueCardsNumber === 2) {
+					if(highPairValue) {
+						lowPairValue = cardValue;
+					}
+					else {
+						highPairValue = cardValue;
+					}
 					for(var j = i; j < i + 2; j++) {
 						handCards.push(cards[j]);
 					}
 					cards.splice(i, 2);
 					if(handCards.length === 4) {
 						handCards.push(cards[cards.length - 1]);
+						highCardValue = cards[cards.length - 1].value;
 						return {
 							cards: handCards,
-							handStrength: 2
+							handStrength: 2,
+							highPairValue: highPairValue,
+							lowPairValue: lowPairValue,
+							highCardValue: highCardValue
 						};
 					}
 				}
@@ -267,6 +298,7 @@ var oddsCalculator = function() {
 		var sameValueCardsNumber = 0;
 		var cardValue;
 		var handCards = [];
+		var highCardsValues =[];
 		for(var i = cards.length - 1; i >= 0; i--) {
 			if(cards[i].value === cardValue) {
 				sameValueCardsNumber++;
@@ -276,13 +308,18 @@ var oddsCalculator = function() {
 					}
 					cards.splice(i, 2);
 					//add the 3 highest card possible to hand
-					handCards.push(cards[cards.length - 1]);
-					handCards.push(cards[cards.length - 2]);
 					handCards.push(cards[cards.length - 3]);
+					highCardsValues.push(cards[cards.length - 3].value);
+					handCards.push(cards[cards.length - 2]);
+					highCardsValues.push(cards[cards.length - 2].value);
+					handCards.push(cards[cards.length - 1]);
+					highCardsValues.push(cards[cards.length - 1].value);
 					handCards.sort(sortCardsByValue);
 					return {
 						cards: handCards,
-						handStrength: 1
+						handStrength: 1,
+						setCardValue: cardValue,
+						highCardsValues: highCardsValues
 					};
 				}
 			}
