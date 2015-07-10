@@ -41,8 +41,8 @@ var oddsCalculator = function() {
 			}
 		}
 		// if last card is ace, we need to check if can be ace,2,3,4,5 straight
-		if(straightLength === 4 && cards[cards.length -1].value === 13 && cards[0].value === 0 && lastSymbol === cards[cards.length -1].symbol) {
-			for(var m = 0; m < 4; m++) {
+		if(straightLength === 3 && cards[cards.length -1].value === 13 && cards[0].value === 0 && lastSymbol === cards[cards.length -1].symbol) {
+			for(var m = 0; m < 3; m++) {
 				handCards.push(cards[m]);
 			}
 			handCards.push(cards[cards.length - 1]);
@@ -78,7 +78,7 @@ var oddsCalculator = function() {
 				}
 			}
 			else {
-				if(i < 4) {
+				if(i < 3) {
 					return null;
 				}
 				cardValue = cards[i].value;
@@ -88,7 +88,51 @@ var oddsCalculator = function() {
 	};
 
 	var isFullHouse = function(cards) {
-
+		var sameValueCardsNumber = 0;
+		var cardValue;
+		var handCards = [];
+		for(var i = cards.length - 1; i >= 0; i--) {
+			if(cards[i].value === cardValue) {
+				sameValueCardsNumber++;
+				if(sameValueCardsNumber === 3) {
+					for(var j = i; j < i + 3; j++) {
+						handCards.push(cards[j]);
+					}
+					cards.splice(i, 3);
+					cardValue = -1;
+					sameValueCardsNumber = 0;
+					for(var m = cards.length - 1; m >= 0; m--) {
+						if(cards[m].value === cardValue) {
+							sameValueCardsNumber++;
+							if (sameValueCardsNumber === 2) {
+								for (var n = m; n < i + 2; n++) {
+									handCards.push(cards[n]);
+								}
+								handCards.sort(sortCardsByValue);
+								return {
+									cards: handCards,
+									handStrength: 6
+								};
+							}
+						}
+						else {
+							if(m < 1) {
+								return null;
+							}
+							cardValue = cards[m].value;
+							sameValueCardsNumber = 1;
+						}
+					}
+				}
+			}
+			else {
+				if(i < 2) {
+					return null;
+				}
+				cardValue = cards[i].value;
+				sameValueCardsNumber = 1;
+			}
+		}
 	};
 
 	var isFlush = function(cards) {
@@ -209,7 +253,7 @@ var oddsCalculator = function() {
 				}
 			}
 			else {
-				if(i < 2) {
+				if(i < 1) {
 					return null;
 				}
 				cardValue = cards[i].value;
@@ -243,7 +287,7 @@ var oddsCalculator = function() {
 				}
 			}
 			else {
-				if(i < 2) {
+				if(i < 1) {
 					return null;
 				}
 				cardValue = cards[i].value;
@@ -253,7 +297,7 @@ var oddsCalculator = function() {
 	};
 
 	//hand strength: straight flush = 8, four of a kind = 7, full house = 6, flush = 5, straight = 4, three of a kind = 3, two pairs = 2, one pair = 1, high card = 0
-	var calculateHandStrength = function(cards) {
+	this.calculateHandStrength = function(cards) {
 		var handParameters = isStraightFlush(cards);
 		if(handParameters) {
 			return handParameters;
