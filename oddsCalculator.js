@@ -42,7 +42,7 @@ var oddsCalculator = function() {
 			}
 		}
 		// if last card is ace, we need to check if can be ace,2,3,4,5 straight
-		if(straightLength === 3 && cards[cards.length -1].value === 13 && cards[0].value === 0 && lastSymbol === cards[cards.length -1].symbol) {
+		if(straightLength === 3 && cards[cards.length -1].value === 12 && cards[0].value === 0 && lastSymbol === cards[cards.length -1].symbol) {
 			for(var m = 0; m < 3; m++) {
 				handCards.push(cards[m]);
 			}
@@ -60,7 +60,7 @@ var oddsCalculator = function() {
 
 	var isFourOfAKind = function(cards) {
 		var sameValueCardsNumber = 0;
-		var cardValue;
+		var cardValue = -1;
 		var handCards = [];
 		var highCardValue;
 		for(var i = cards.length - 1; i >= 0; i--) {
@@ -196,7 +196,7 @@ var oddsCalculator = function() {
 			}
 		}
 		// if last card is ace, we need to check if can be ace,2,3,4,5 straight
-		if(straightLength === 3 && cards[cards.length -1].value === 13 && cards[0].value === 0) {
+		if(straightLength === 3 && cards[cards.length -1].value === 12 && cards[0].value === 0) {
 			for(var m = 0; m < 3; m++) {
 				handCards.push(cards[m]);
 			}
@@ -334,7 +334,7 @@ var oddsCalculator = function() {
 	};
 
 	//hand strength: straight flush = 8, four of a kind = 7, full house = 6, flush = 5, straight = 4, three of a kind = 3, two pairs = 2, one pair = 1, high card = 0
-	this.calculateHandStrength = function(cards) {
+	var calculateHandStrength = function(cards) {
 		var handParameters = isStraightFlush(cards);
 		if(handParameters) {
 			return handParameters;
@@ -369,15 +369,201 @@ var oddsCalculator = function() {
 		}
 
 		return {
-			cards: cards,
+			handCards: cards,
 			handStrength: 0
 		};
 	};
 
-	//usersCards: array of cards. every two cards belong to single player
+	var getNewPack = function() {
+		var pack = [];
+		for(var i = 0; i <= 12; i++) {
+			for(var j = 0; j <= 3; i++) {
+				pack.push({
+					value: i,
+					symbol: j
+				});
+			}
+		}
+		return pack;
+	};
+
+	var getPackWithoutSpecificCards = function(pack, cards) {
+		if(!pack || pack.length === 0) {
+			return null;
+		}
+		if(!cards || cards.length === 0) {
+			return pack;
+		}
+		cards.forEach(function(card) {
+			for(var i = 0; i < pack.length; i++) {
+				if(card.value === pack[i].value && card.symbol === pack[i].symbol) {
+					pack.splice(i, 1);
+					break;
+				}
+			}
+		});
+	};
+
+	var getBestHandPlayerId = function(players) {
+		var bestHand = {
+			handStrength: -1
+		};
+		var hand;
+		var bestHandIds = [];
+		for(var i = 0; i < players.length; i++) {
+			hand = calculateHandStrength(players[i].cards);
+			if(bestHand.handStrength < hand.handStrength) {
+				bestHand = hand;
+				bestHandIds = [];
+				bestHandIds.push(players[i].id);
+			}
+			else if(bestHand.handStrength === hand.handStrength) {
+				switch(bestHand.handStrength) {
+					case 8 || 5 || 4:
+						if(bestHand.highestCardValue < hand.highestCardValue) {
+							bestHand = hand;
+							bestHandIds = [];
+							bestHandIds.push(players[i].id);
+						}
+						else if(bestHand.highestCardValue === hand.highestCardValue) {
+							bestHandIds.push(players[i].id);
+						}
+						break;
+					case 7:
+						if(bestHand.setCardValue < hand.setCardValue) {
+							bestHand = hand;
+							bestHandIds = [];
+							bestHandIds.push(players[i].id);
+						}
+						else if(bestHand.setCardValue === hand.setCardValue) {
+							if(bestHand.highCardValue < hand.highCardValue) {
+								bestHand = hand;
+								bestHandIds = [];
+								bestHandIds.push(players[i].id);
+							}
+							else if(bestHand.highCardValue === hand.highCardValue) {
+								bestHandIds.push(players[i].id);
+							}
+						}
+						break;
+					case 6:
+						if(bestHand.setThreeValue < hand.setThreeValue) {
+							bestHand = hand;
+							bestHandIds = [];
+							bestHandIds.push(players[i].id);
+						}
+						else if(bestHand.setThreeValue === hand.setThreeValue) {
+							if(bestHand.pairValue < hand.pairValue) {
+								bestHand = hand;
+								bestHandIds = [];
+								bestHandIds.push(players[i].id);
+							}
+							else if(bestHand.pairValue === hand.pairValue) {
+								bestHandIds.push(players[i].id);
+							}
+						}
+						break;
+					case 3 || 1:
+						if(bestHand.setCardValue < hand.setCardValue) {
+							bestHand = hand;
+							bestHandIds = [];
+							bestHandIds.push(players[i].id);
+						}
+						else if(bestHand.setCardValue === hand.setCardValue) {
+							for(var i = bestHand.highCardsValues.length - 1; i >= 0; i--) {
+								if(bestHand.highCardsValues[i] < hand.highCardsValues[i]) {
+									bestHand = hand;
+									bestHandIds = [];
+									bestHandIds.push(players[i].id);
+								}
+								else if(bestHand.highCardsValues[i] === hand.highCardsValues[i]) {
+									if(i === 0) {
+										bestHandIds.push(players[i].id);
+									}
+								}
+							}
+						}
+						break;
+					case 2:
+						if(bestHand.highPairValue < hand.highPairValue) {
+							bestHand = hand;
+							bestHandIds = [];
+							bestHandIds.push(players[i].id);
+						}
+						else if(bestHand.highPairValue === hand.highPairValue) {
+							if(bestHand.lowPairValue < hand.lowPairValue) {
+								bestHand = hand;
+								bestHandIds = [];
+								bestHandIds.push(players[i].id);
+							}
+							else if(bestHand.lowPairValue === hand.lowPairValue) {
+								if(bestHand.highCardValue < hand.highCardValue) {
+									bestHand = hand;
+									bestHandIds = [];
+									bestHandIds.push(players[i].id);
+								}
+								else if(bestHand.highCardValue === hand.highCardValue) {
+									bestHandIds.push(players[i].id);
+								}
+							}
+						}
+						break;
+					case 0:
+						for(var i = bestHand.handCards.length - 1; i >= 0; i--) {
+							if(bestHand.handCards[i] < hand.handCards[i]) {
+								bestHand = hand;
+								bestHandIds = [];
+								bestHandIds.push(players[i].id);
+							}
+							else if(bestHand.handCards[i] === hand.handCards[i]) {
+								if(i === 0) {
+									bestHandIds.push(players[i].id);
+								}
+							}
+						}
+						break;
+				}
+			}
+		}
+		return bestHandIds;
+	};
+
+	var calculatePlayersOdds = function(players, streets, pack) {
+		var maximumStreets = 5;
+		var numberOfCardsToOpen = maximumStreets - streets;
+		//for all the cards options- compare between all the players
+	};
+
+	//usersCards: array of players objects. every player have: cards: [{value, symbol}X2], id: string
 	//streets: array for flop, turn and river cards
-	//packCards: cards left in the pack
-	this.calculate = function(usersCards, streets, packCards) {
+	this.calculate = function(players, streets) {
+		if(!players || players.length === 0) {
+			return null;
+		}
+		var usersCards = [];
+		for(var i = 0; i < players.length; i++) {
+			players.cards.forEach(function(card) {
+				usersCards.push(card);
+			});
+		}
+		var usedCards;
+		if(usersCards) {
+			if(usersCards.length % 2 !== 0) {
+				return null;
+			}
+			if(streets) {
+				usedCards = usersCards.concat(streets);
+			}
+			else {
+				usedCards = usersCards;
+			}
+		}
+		else {
+			return null;
+		}
+		var pack =  getNewPack();
+		pack = getPackWithoutSpecificCards(pack, usedCards);
+
 		var odds;
 
 		return odds;
