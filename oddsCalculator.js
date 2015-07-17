@@ -1,4 +1,5 @@
 var oddsCalculator = function() {
+	// var myCards = [{value:1 ,symbol:0},{value:1 ,symbol:3},{value:3 ,symbol:0},{value:4 ,symbol:1},{value:6 ,symbol:2},{value:7 ,symbol:0},{value:12 ,symbol:0}];
 
 	var sortCardsByValue = function(a,b) {
 		if (a.value < b.value)
@@ -265,7 +266,6 @@ var oddsCalculator = function() {
 					for(var j = i; j < i + 2; j++) {
 						handCards.push(cards[j]);
 					}
-					cards.splice(i, 2);
 					if(handCards.length === 4) {
 						handCards.push(cards[cards.length - 1]);
 						highCardValue = cards[cards.length - 1].value;
@@ -373,7 +373,7 @@ var oddsCalculator = function() {
 	var getNewPack = function() {
 		var pack = [];
 		for(var i = 0; i <= 12; i++) {
-			for(var j = 0; j <= 3; i++) {
+			for(var j = 0; j <= 3; j++) {
 				pack.push({
 					value: i,
 					symbol: j
@@ -398,6 +398,7 @@ var oddsCalculator = function() {
 				}
 			}
 		});
+		return pack;
 	};
 
 	var getBestHandPlayerIndex = function(players) {
@@ -505,15 +506,15 @@ var oddsCalculator = function() {
 						}
 						break;
 					case 0:
-						for(var i = bestHand.handCards.length - 1; i >= 0; i--) {
-							if(bestHand.handCards[i] < hand.handCards[i]) {
+						for(var j = bestHand.handCards.length - 1; j >= 0; j--) {
+							if(bestHand.handCards[j] < hand.handCards[j]) {
 								bestHand = hand;
 								bestHandIndexes = [];
-								bestHandIndexes.push(players[i].index);
+								bestHandIndexes.push(players[j].index);
 							}
-							else if(bestHand.handCards[i] === hand.handCards[i]) {
+							else if(bestHand.handCards[j] === hand.handCards[j]) {
 								if(i === 0) {
-									bestHandIndexes.push(players[i].index);
+									bestHandIndexes.push(players[j].index);
 								}
 							}
 						}
@@ -535,6 +536,7 @@ var oddsCalculator = function() {
 		var packCards = [];
 		var indexes;
 		var optionsNumber = 1;
+		var concatCardsArray;
 		players.forEach(function(player) {
 			player.wins = 0;
 		});
@@ -545,9 +547,11 @@ var oddsCalculator = function() {
 				for(var i = 0; i < pack.length; i++) {
 					newPlayersArray = [];
 					for(var j = 0; j < players.length; j++) {
+						concatCardsArray = players[j].cards.concat(streets);
+						concatCardsArray.push(pack[i]);
 						newPlayer = {
-							cards: players[i].cards.concat(streets).push(pack[i]).sort(sortCardsByValue),
-							index: i
+							cards: concatCardsArray.sort(sortCardsByValue),
+							index: j
 						};
 						newPlayersArray.push(newPlayer);
 					}
@@ -567,8 +571,8 @@ var oddsCalculator = function() {
 						newPlayersArray = [];
 						for(var j = 0; j < players.length; j++) {
 							newPlayer = {
-								cards: players[i].cards.concat(streets).concat(packCards).sort(sortCardsByValue),
-								index: i
+								cards: players[j].cards.concat(streets).concat(packCards).sort(sortCardsByValue),
+								index: j
 							};
 							newPlayersArray.push(newPlayer);
 						}
@@ -592,8 +596,8 @@ var oddsCalculator = function() {
 									newPlayersArray = [];
 									for(var j = 0; j < players.length; j++) {
 										newPlayer = {
-											cards: players[i].cards.concat(streets).concat(packCards).sort(sortCardsByValue),
-											index: i
+											cards: players[j].cards.concat(streets).concat(packCards).sort(sortCardsByValue),
+											index: j
 										};
 										newPlayersArray.push(newPlayer);
 									}
@@ -646,6 +650,5 @@ var oddsCalculator = function() {
 
 		return calculatePlayersOdds(players, streets, pack);
 	};
-
 
 };
