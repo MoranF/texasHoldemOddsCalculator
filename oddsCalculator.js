@@ -476,9 +476,12 @@ var oddsCalculator = function() {
 									break;
 								}
 								else if(bestHand.highCardsValues[j] === hand.highCardsValues[j]) {
-									if(i === 0) {
+									if(j === 0) {
 										bestHandIndexes.push(players[i].index);
 									}
+								}
+								else {
+									break;
 								}
 							}
 						}
@@ -519,6 +522,9 @@ var oddsCalculator = function() {
 								if(j === 0) {
 									bestHandIndexes.push(players[i].index);
 								}
+							}
+							else {
+								break;
 							}
 						}
 						break;
@@ -566,9 +572,9 @@ var oddsCalculator = function() {
 				break;
 			case 2:
 				for(var c = 0; c < numberOfCardsToOpen; c++) {
-					optionsNumber = optionsNumber * pack.length - c;
+					optionsNumber = (optionsNumber * (pack.length - c)) / (c + 1);
 				}
-				for(var i = 0; i < pack.length - 1; i++) {
+				for(var i = 0; i < pack.length; i++) {
 					for(var m = i + 1; m < pack.length; m++) {
 						packCards = [pack[i], pack[m]];
 						newPlayersArray = [];
@@ -588,12 +594,12 @@ var oddsCalculator = function() {
 				break;
 			case 5:
 				for(var c = 0; c < numberOfCardsToOpen; c++) {
-					optionsNumber = optionsNumber * pack.length - c;
+					optionsNumber = (optionsNumber * (pack.length - c)) / (c + 1);
 				}
-				for(var i = 0; i < pack.length - 4; i++) {
-					for(var m = i + 1; m < pack.length - 3; m++) {
-						for(var n = m + 1; n < pack.length - 2; n++) {
-							for(var x = n + 1; x < pack.length - 1; x++) {
+				for(var i = 0; i < pack.length; i++) {
+					for(var m = i + 1; m < pack.length; m++) {
+						for(var n = m + 1; n < pack.length; n++) {
+							for(var x = n + 1; x < pack.length; x++) {
 								for(var y = x + 1; y < pack.length; y++) {
 									packCards = [pack[i], pack[m], pack[n], pack[x], pack[y]];
 									newPlayersArray = [];
@@ -616,7 +622,7 @@ var oddsCalculator = function() {
 				break;
 		}
 		players.forEach(function(player) {
-			player.wins = player.wins / optionsNumber;
+			player.wins = player.wins / optionsNumber * 100;
 		});
 		return players;
 	};
