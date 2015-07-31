@@ -498,9 +498,9 @@ var oddsCalculator = function() {
 	};
 
 	var getPlayersOdds = function(numberOfCardsToOpen, packCards, startFromIndex, currentCards, players, streets) {
-		if(startFromIndex > packCards.length - numberOfCardsToOpen) {
-			return players;
-		}
+		// if(startFromIndex > packCards.length - numberOfCardsToOpen) {
+		// 	return players;
+		// }
 		var index = currentCards.length;
 		if(numberOfCardsToOpen === 1) {
 			var indexes;
@@ -524,20 +524,17 @@ var oddsCalculator = function() {
 					players[indexes[0]].wins++;
 				}
 			}
-			if(startFromIndex === 0) {
-				return players;
-			}
 			currentCards.pop();
+			return players;
 		}
 		else {
 			var result;
-			for(var j = startFromIndex; j < packCards.length; j++) {
+			for(var j = startFromIndex; j < packCards.length - numberOfCardsToOpen; j++) {
 				currentCards[index] = packCards[j];
 				result = getPlayersOdds(numberOfCardsToOpen - 1, packCards, j + 1, currentCards, players, streets);
-				if(result) {
-					return result;
-				}
 			}
+			currentCards.pop();
+			return result;
 		}
 	};
 
@@ -593,4 +590,5 @@ var oddsCalculator = function() {
 
 		return calculatePlayersOdds(players, streets, pack);
 	};
+
 };
