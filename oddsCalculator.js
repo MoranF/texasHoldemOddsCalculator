@@ -118,11 +118,14 @@ var oddsCalculator = function() {
 					}
 					cardValue = -1;
 					sameValueCardsNumber = 0;
-					for(var m = i - 1; m >= 0; m--) {
+					for(var m = cards.length - 1; m >= 0; m--) {
 						if(cards[m].value === cardValue) {
 							sameValueCardsNumber++;
 							if (sameValueCardsNumber === 2) {
-								for (var n = m; n < i + 2; n++) {
+								if(cardValue === setThreeValue) {
+									continue;
+								}
+								for (var n = m; n < m + 2; n++) {
 									handCards.push(cards[n]);
 								}
 								handCards.sort(sortCardsByValue);
