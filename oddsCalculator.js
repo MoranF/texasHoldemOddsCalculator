@@ -410,6 +410,30 @@ var oddsCalculator = function() {
 		return pack;
 	};
 
+	var getBetterHandIndex = function(bestHand, playerHand, sortedPropertiesByStrength) {
+		var property;
+		for(var i = 0; i < sortedPropertiesByStrength.length; i++) {
+			property = sortedPropertiesByStrength[i];
+			if(property.constructor === Array) {
+				for(var j = property.length - 1; j >= 0; j--) {
+					if(bestHand[property][j] < playerHand[property][j]) {
+						return [playerHand.index];
+					}
+					if(bestHand[property][j] > playerHand[property][j]) {
+						return [bestHand.index];
+					}
+				}
+			}
+			if(bestHand[property] < playerHand[property]) {
+				return [playerHand.index];
+			}
+			if(bestHand[property] > playerHand[property]) {
+				return [bestHand.index];
+			}
+		}
+		return [bestHand.index, playerHand.index];
+	};
+
 	var getBestHandPlayerIndex = function(players) {
 		var bestHand = {
 			handStrength: -1
@@ -418,6 +442,7 @@ var oddsCalculator = function() {
 		var bestHandIndexes = [];
 		for(var i = 0; i < players.length; i++) {
 			hand = calculateHandStrength(players[i].cards);
+			hand.index = players[i].index;
 			if(bestHand.handStrength < hand.handStrength) {
 				bestHand = hand;
 				bestHandIndexes = [];
@@ -428,98 +453,25 @@ var oddsCalculator = function() {
 					case 8:
 					case 5:
 					case 4:
-						if(bestHand.highestCardValue < hand.highestCardValue) {
-							bestHand = hand;
-							bestHandIndexes = [];
-							bestHandIndexes.push(players[i].index);
-						}
-						else if(bestHand.highestCardValue === hand.highestCardValue) {
-							bestHandIndexes.push(players[i].index);
-						}
+						var properties = ['highestCardValue'];
+						bestHandIndexes = getBetterHandIndex(bestHand, hand, properties);
 						break;
 					case 7:
-						if(bestHand.setCardValue < hand.setCardValue) {
-							bestHand = hand;
-							bestHandIndexes = [];
-							bestHandIndexes.push(players[i].index);
-						}
-						else if(bestHand.setCardValue === hand.setCardValue) {
-							if(bestHand.highCardValue < hand.highCardValue) {
-								bestHand = hand;
-								bestHandIndexes = [];
-								bestHandIndexes.push(players[i].index);
-							}
-							else if(bestHand.highCardValue === hand.highCardValue) {
-								bestHandIndexes.push(players[i].index);
-							}
-						}
+						var properties = ['setCardValue', 'highCardValue'];
+						bestHandIndexes = getBetterHandIndex(bestHand, hand, properties);
 						break;
 					case 6:
-						if(bestHand.setThreeValue < hand.setThreeValue) {
-							bestHand = hand;
-							bestHandIndexes = [];
-							bestHandIndexes.push(players[i].index);
-						}
-						else if(bestHand.setThreeValue === hand.setThreeValue) {
-							if(bestHand.pairValue < hand.pairValue) {
-								bestHand = hand;
-								bestHandIndexes = [];
-								bestHandIndexes.push(players[i].index);
-							}
-							else if(bestHand.pairValue === hand.pairValue) {
-								bestHandIndexes.push(players[i].index);
-							}
-						}
+						var properties = ['setThreeValue', 'pairValue'];
+						bestHandIndexes = getBetterHandIndex(bestHand, hand, properties);
 						break;
 					case 3:
 					case 1:
-						if(bestHand.setCardValue < hand.setCardValue) {
-							bestHand = hand;
-							bestHandIndexes = [];
-							bestHandIndexes.push(players[i].index);
-						}
-						else if(bestHand.setCardValue === hand.setCardValue) {
-							for(var j = bestHand.highCardsValues.length - 1; j >= 0; j--) {
-								if(bestHand.highCardsValues[j] < hand.highCardsValues[j]) {
-									bestHand = hand;
-									bestHandIndexes = [];
-									bestHandIndexes.push(players[i].index);
-									break;
-								}
-								else if(bestHand.highCardsValues[j] === hand.highCardsValues[j]) {
-									if(j === 0) {
-										bestHandIndexes.push(players[i].index);
-									}
-								}
-								else {
-									break;
-								}
-							}
-						}
+						var properties = ['setCardValue', 'highCardsValues'];
+						bestHandIndexes = getBetterHandIndex(bestHand, hand, properties);
 						break;
 					case 2:
-						if(bestHand.highPairValue < hand.highPairValue) {
-							bestHand = hand;
-							bestHandIndexes = [];
-							bestHandIndexes.push(players[i].index);
-						}
-						else if(bestHand.highPairValue === hand.highPairValue) {
-							if(bestHand.lowPairValue < hand.lowPairValue) {
-								bestHand = hand;
-								bestHandIndexes = [];
-								bestHandIndexes.push(players[i].index);
-							}
-							else if(bestHand.lowPairValue === hand.lowPairValue) {
-								if(bestHand.highCardValue < hand.highCardValue) {
-									bestHand = hand;
-									bestHandIndexes = [];
-									bestHandIndexes.push(players[i].index);
-								}
-								else if(bestHand.highCardValue === hand.highCardValue) {
-									bestHandIndexes.push(players[i].index);
-								}
-							}
-						}
+						var properties = ['highPairValue', 'lowPairValue', 'highCardValue'];
+						bestHandIndexes = getBetterHandIndex(bestHand, hand, properties);
 						break;
 					case 0:
 						for(var j = bestHand.handCards.length - 1; j >= 0; j--) {
@@ -545,97 +497,68 @@ var oddsCalculator = function() {
 		return bestHandIndexes;
 	};
 
+	var getPlayersOdds = function(numberOfCardsToOpen, packCards, startFromIndex, currentCards, players, streets) {
+		if(startFromIndex > packCards.length - numberOfCardsToOpen) {
+			return players;
+		}
+		var index = currentCards.length;
+		if(numberOfCardsToOpen === 1) {
+			var indexes;
+			var newPlayersArray;
+			var concatCardsArray;
+			var newPlayer = {};
+			for(var i = startFromIndex; i < packCards.length; i++) {
+				currentCards[index] = packCards[i];
+				newPlayersArray = [];
+				for(var m = 0; m < players.length; m++) {
+					concatCardsArray = players[m].cards.concat(streets);
+					concatCardsArray = concatCardsArray.concat(currentCards);
+					newPlayer = {
+						cards: concatCardsArray.sort(sortCardsByValue),
+						index: m
+					};
+					newPlayersArray.push(newPlayer);
+				}
+				indexes = getBestHandPlayerIndex(newPlayersArray);
+				if(indexes.length === 1) {
+					players[indexes[0]].wins++;
+				}
+			}
+			if(startFromIndex === 0) {
+				return players;
+			}
+			currentCards.pop();
+		}
+		else {
+			var result;
+			for(var j = startFromIndex; j < packCards.length; j++) {
+				currentCards[index] = packCards[j];
+				result = getPlayersOdds(numberOfCardsToOpen - 1, packCards, j + 1, currentCards, players, streets);
+				if(result) {
+					return result;
+				}
+			}
+		}
+	};
+
 	var calculatePlayersOdds = function(players, streets, pack) {
 		if(!streets) {
 			streets = [];
 		}
 		var maximumStreets = 5;
 		var numberOfCardsToOpen = maximumStreets - streets.length;
-		var newPlayersArray = [];
-		var newPlayer;
-		var packCards = [];
-		var indexes;
 		var optionsNumber = 1;
-		var concatCardsArray;
 		players.forEach(function(player) {
 			player.wins = 0;
 		});
-		// numberOfCardsToOpen = 1/2/5
-		switch (numberOfCardsToOpen) {
-			case 1:
-				optionsNumber = pack.length;
-				for(var i = 0; i < pack.length; i++) {
-					newPlayersArray = [];
-					for(var j = 0; j < players.length; j++) {
-						concatCardsArray = players[j].cards.concat(streets);
-						concatCardsArray.push(pack[i]);
-						newPlayer = {
-							cards: concatCardsArray.sort(sortCardsByValue),
-							index: j
-						};
-						newPlayersArray.push(newPlayer);
-					}
-					indexes = getBestHandPlayerIndex(newPlayersArray);
-					if(indexes.length === 1) {
-						players[indexes[0]].wins++;
-					}
-				}
-				break;
-			case 2:
-				for(var c = 0; c < numberOfCardsToOpen; c++) {
-					optionsNumber = (optionsNumber * (pack.length - c)) / (c + 1);
-				}
-				for(var i = 0; i < pack.length; i++) {
-					for(var m = i + 1; m < pack.length; m++) {
-						packCards = [pack[i], pack[m]];
-						newPlayersArray = [];
-						for(var j = 0; j < players.length; j++) {
-							newPlayer = {
-								cards: players[j].cards.concat(streets).concat(packCards).sort(sortCardsByValue),
-								index: j
-							};
-							newPlayersArray.push(newPlayer);
-						}
-						indexes = getBestHandPlayerIndex(newPlayersArray);
-						if(indexes.length === 1) {
-							players[indexes[0]].wins++;
-						}
-					}
-				}
-				break;
-			//case 5:
-			//	for(var c = 0; c < numberOfCardsToOpen; c++) {
-			//		optionsNumber = (optionsNumber * (pack.length - c)) / (c + 1);
-			//	}
-			//	for(var i = 0; i < pack.length; i++) {
-			//		for(var m = i + 1; m < pack.length; m++) {
-			//			for(var n = m + 1; n < pack.length; n++) {
-			//				for(var x = n + 1; x < pack.length; x++) {
-			//					for(var y = x + 1; y < pack.length; y++) {
-			//						packCards = [pack[i], pack[m], pack[n], pack[x], pack[y]];
-			//						newPlayersArray = [];
-			//						for(var j = 0; j < players.length; j++) {
-			//							newPlayer = {
-			//								cards: players[j].cards.concat(streets).concat(packCards).sort(sortCardsByValue),
-			//								index: j
-			//							};
-			//							newPlayersArray.push(newPlayer);
-			//						}
-			//						indexes = getBestHandPlayerIndex(newPlayersArray);
-			//						if(indexes.length === 1) {
-			//							players[indexes[0]].wins++;
-			//						}
-			//					}
-			//				}
-			//			}
-			//		}
-			//	}
-			//	break;
+		for(var c = 0; c < numberOfCardsToOpen; c++) {
+			optionsNumber = (optionsNumber * (pack.length - c)) / (c + 1);
 		}
-		players.forEach(function(player) {
+		var playersOdds = getPlayersOdds(numberOfCardsToOpen, pack, 0, [], players, streets);
+		playersOdds.forEach(function(player) {
 			player.wins = player.wins / optionsNumber * 100;
 		});
-		return players;
+		return playersOdds;
 	};
 
 	//players: array of players objects. every player have: cards: [{value, symbol}X2], id: string
@@ -670,5 +593,4 @@ var oddsCalculator = function() {
 
 		return calculatePlayersOdds(players, streets, pack);
 	};
-
 };
