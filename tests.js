@@ -51,7 +51,7 @@ describe( "odds calculator", function () {
 	});
 
 
-	it("check odds 1", function () {
+	it("check odds 2", function () {
 		var calc = new oddsCalculator();
 		var player1 = {
 			id: 1,
@@ -93,6 +93,51 @@ describe( "odds calculator", function () {
 					value:3, symbol:3
 				}
 			], wins: 86.36363636363636
+		}]);
+	});
+
+	it("check odds 3", function () {
+		var calc = new oddsCalculator();
+		var player1 = {
+			id: 1,
+			cards: [
+				{
+					value:4, symbol:1
+				},
+				{
+					value:12, symbol:2
+				}
+			]
+		}
+		var player2 = {
+			id: 2,
+			cards: [
+				{
+					value:2, symbol:1
+				},
+				{
+					value:9, symbol:0
+				}
+			]
+		}
+		expect(calc.calculate([player1,player2], [{value: 1, symbol: 3}, {value: 11, symbol: 2}, {value: 4, symbol: 2}])).toEqual([{id: 1,
+			cards: [
+				{
+					value:4, symbol:1
+				},
+				{
+					value:12, symbol:2
+				}
+			], wins: 85.95959595959596},{
+			id: 2,
+			cards: [
+				{
+					value:2, symbol:1
+				},
+				{
+					value:9, symbol:0
+				}
+			], wins: 13.939393939393941
 		}]);
 	});
 
