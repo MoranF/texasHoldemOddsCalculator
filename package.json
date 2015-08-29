@@ -1,0 +1,34 @@
+{
+  "name": "texas-holdem-odds-calculator",
+  "version": "1.0.0",
+  "description": "odds calculator for texas holdem players",
+  "main": "oddsCalculator.js",
+  "dependencies": {
+    "karma": "^0.13.3",
+    "jasmine-core": "^2.3.4",
+    "karma-chrome-launcher": "^0.2.0",
+    "karma-jasmine": "^0.3.6",
+    "karma-cli": "^0.1.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MoranF/texasHoldemOddsCalculator.git"
+  },
+  "keywords": [
+    "texas",
+    "holdem",
+    "poker",
+    "odds",
+    "calculator"
+  ],
+  "author": "Moran Fine",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MoranF/texasHoldemOddsCalculator/issues"
+  },
+  "homepage": "https://github.com/MoranF/texasHoldemOddsCalculator#readme"
+}

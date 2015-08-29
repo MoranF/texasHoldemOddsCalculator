@@ -6,7 +6,7 @@ var oddsCalculator = function() {
 		if (a.value > b.value)
 			return 1;
 		return 0;
-	}
+	};
 
 	var addHighestCardsToArray = function(fromArray, toArray, numberOfCards, fieldName) {
 		//the two arrays should be sorted
@@ -172,8 +172,7 @@ var oddsCalculator = function() {
 				}
 				return {
 					cards: handCards,
-					handStrength: 5,
-					highestCardValue: handCards[handCards.length - 1].value
+					handStrength: 5
 				};
 			}
 		}
@@ -378,6 +377,7 @@ var oddsCalculator = function() {
 
 		return {
 			handCards: cards,
+			cards: cards,
 			handStrength: 0
 		};
 	};
@@ -417,7 +417,7 @@ var oddsCalculator = function() {
 		var property;
 		for(var i = 0; i < sortedPropertiesByStrength.length; i++) {
 			property = sortedPropertiesByStrength[i];
-			if(property.constructor === Array) {
+			if(bestHand[property].constructor === Array) {
 				for(var j = property.length - 1; j >= 0; j--) {
 					if(bestHand[property][j] < playerHand[property][j]) {
 						return [playerHand.index];
@@ -454,7 +454,6 @@ var oddsCalculator = function() {
 			else if(bestHand.handStrength === hand.handStrength) {
 				switch(bestHand.handStrength) {
 					case 8:
-					case 5:
 					case 4:
 						var properties = ['highestCardValue'];
 						bestHandIndexes = getBetterHandIndex(bestHand, hand, properties);
@@ -476,15 +475,16 @@ var oddsCalculator = function() {
 						var properties = ['highPairValue', 'lowPairValue', 'highCardValue'];
 						bestHandIndexes = getBetterHandIndex(bestHand, hand, properties);
 						break;
+					case 5:
 					case 0:
-						for(var j = bestHand.handCards.length - 1; j >= 0; j--) {
-							if(bestHand.handCards[j].value < hand.handCards[j].value) {
+						for(var j = bestHand.cards.length - 1; j >= 0; j--) {
+							if(bestHand.cards[j].value < hand.cards[j].value) {
 								bestHand = hand;
 								bestHandIndexes = [];
 								bestHandIndexes.push(players[i].index);
 								break;
 							}
-							else if(bestHand.handCards[j].value === hand.handCards[j].value) {
+							else if(bestHand.cards[j].value === hand.cards[j].value) {
 								if(j === 0) {
 									bestHandIndexes.push(players[i].index);
 								}
