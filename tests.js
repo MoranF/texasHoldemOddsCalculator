@@ -141,4 +141,49 @@ describe( "odds calculator", function () {
 		}]);
 	});
 
+	it("check odds 4", function () {
+		var calc = new oddsCalculator();
+		var player1 = {
+			id: 1,
+			cards: [
+				{
+					value:2, symbol:3
+				},
+				{
+					value:7, symbol:2
+				}
+			]
+		}
+		var player2 = {
+			id: 2,
+			cards: [
+				{
+					value:10, symbol:1
+				},
+				{
+					value:1, symbol:0
+				}
+			]
+		}
+		expect(calc.calculate([player1,player2], [{value: 12, symbol: 3}, {value: 2, symbol: 1}, {value: 2, symbol: 2}])).toEqual([{id: 1,
+			cards: [
+				{
+					value:2, symbol:3
+				},
+				{
+					value:7, symbol:2
+				}
+			], wins: 1.92},{
+			id: 2,
+			cards: [
+				{
+					value:10, symbol:1
+				},
+				{
+					value:1, symbol:0
+				}
+			], wins: 97.78
+		}]);
+	});
+
 });

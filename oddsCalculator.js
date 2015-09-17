@@ -28,19 +28,21 @@ var oddsCalculator = function() {
 		var lastSymbol = -1;
 		var handCards = [];
 		for(var i = cards.length - 1; i >= 0; i--) {
-			if(lastCardValue === cards[i].value + 1 && lastSymbol === cards[i].symbol) {
-				straightLength++;
-				if(straightLength === 5) {
-					for(var j = i; j < i + 5; j++) {
-						handCards.push(cards[j]);
+			if(lastCardValue === cards[i].value + 1) {
+				if(lastSymbol === cards[i].symbol) {
+					straightLength++;
+					if(straightLength === 5) {
+						for(var j = i; j < i + 5; j++) {
+							handCards.push(cards[j]);
+						}
+						return {
+							cards: handCards,
+							handStrength: 8,
+							highestCardValue: handCards[handCards.length - 1].value
+						};
 					}
-					return {
-						cards: handCards,
-						handStrength: 8,
-						highestCardValue: handCards[handCards.length - 1].value
-					};
+					lastCardValue = cards[i].value;
 				}
-				lastCardValue = cards[i].value;
 			}
 			else {
 				if(i < 3) {
@@ -184,6 +186,9 @@ var oddsCalculator = function() {
 		var straightLength = 0;
 		var handCards = [];
 		for(var i = cards.length - 1; i >= 0; i--) {
+			if(lastCardValue === cards[i].value) {
+				continue;
+			}
 			if(lastCardValue === cards[i].value + 1) {
 				straightLength++;
 				if(straightLength === 5) {
@@ -569,6 +574,7 @@ var oddsCalculator = function() {
 		}
 		var usersCards = [];
 		for(var i = 0; i < players.length; i++) {
+			// players[i].cards.sort(sortCardsByValue);
 			players[i].cards.forEach(function(card) {
 				usersCards.push(card);
 			});
